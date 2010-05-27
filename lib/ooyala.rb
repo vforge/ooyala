@@ -30,6 +30,11 @@ module Ooyala
       self.get("/query", :query => options)
     end
     
+    def query_channel(channel_embed_code, options = {})
+      opts = {'channelEmbedCode' => channel_embed_code, 'mode' => 'list'}.merge(options)
+      self.get("/channels", :query => opts)
+    end
+    
     ##
     # Options:
     # rage:: String:: "0-4"
