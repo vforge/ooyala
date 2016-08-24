@@ -21,21 +21,24 @@ module HTTParty
   private
     def perform_request(http_method, path, options)
       process_cookies(options)
-      string_to_sign = ooyala_options[:api_codes][:secret]
+
+      if self.responds_to? :ooyala_options
+        string_to_sign = ooyala_options[:api_codes][:secret]
       
-      options[:query] ||= {}
-      options[:query]["expires"] ||= (Time.now.to_i + 5).to_s
+        options[:query] ||= {}
+        options[:query]["expires"] ||= (Time.now.to_i + 5).to_s
       
-      q = ["pcode=#{ooyala_options[:api_codes][:partner]}"]
-      options[:query].keys.sort.each do |k|
-        string_to_sign += "#{k}=#{options[:query][k]}"
-        q << "#{CGI.escape(k)}=#{CGI.escape(options[:query][k])}"
+        q = ["pcode=#{ooyala_options[:api_codes][:partner]}"]
+        options[:query].keys.sort.each do |k|
+          string_to_sign += "#{k}=#{options[:query][k]}"
+          q << "#{CGI.escape(k)}=#{CGI.escape(options[:query][k])}"
+        end
+       
+        digest = Digest::SHA256.digest(string_to_sign)
+        signature = CGI.escape(Base64::encode64(digest).chomp.gsub(/=+$/, ''))
+        q << "signature=#{signature}"
+        options[:query] = q.join("&")
       end
-      
-      digest = Digest::SHA256.digest(string_to_sign)
-      signature = CGI.escape(Base64::encode64(digest).chomp.gsub(/=+$/, ''))
-      q << "signature=#{signature}"
-      options[:query] = q.join("&")
       
       Request.new(http_method, path, default_options.dup.merge(options)).perform
     end
