@@ -22,7 +22,7 @@ module HTTParty
     def perform_request(http_method, path, options)
       process_cookies(options)
 
-      if self.responds_to? :ooyala_options
+      if self.respond_to? :ooyala_options
         string_to_sign = ooyala_options[:api_codes][:secret]
       
         options[:query] ||= {}
